@@ -1,46 +1,92 @@
+import datetime
+import os
+import re
 import time
 
 import bs4
+import pandas as pd
 import requests
 
 
 class ScrapingSponavi():
-    def __init__(self):
+    def __init__(self, start_date, end_date):
         self.base_url = "https://baseball.yahoo.co.jp/npb"
+        self.exec_datetime = datetime.datetime.now()
+        self.start_date = start_date
+        self.end_date = end_date
 
     def get_html(self, url):
+        print("get html ", url)
+        time.sleep(1)
         res = requests.get(url)
         try:
-            res.raise_for_status() # SUCCESS
+            res.raise_for_status()
+            print("success")
         except requests.exceptions.RequestException:
-            return 0, None # FAILD
+            print("faild")
+            return None
         
-        return 1, res.text
+        return res.text
 
-    def save_html(self, str_html, file_path):
-        with open(file_path) as f:
-            f.write(str_html)
+    def save_html(self, html, file_path):
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(html)
         
         return None
     
-    def get_geme_htmls(self, date, output_dir):
+    def check_game_status(self, html):
+        soup = bs4.BeautifulSoup(html, "html.parser")
+        state_original = soup.select_one('span.bb-gameCard__state').get_text(strip=True)
+        
+        if state_original=="試合終了":
+            game_status = "finish"
+        elif state_original == "試合中止":
+            game_status = "cancel"
+        elif state_original == "試合前":
+            game_status = "before"
+        else:
+            game_status = "unkown"
+        
+        return game_status
+    
+    def get_game_htmls(self, date, output_dir):
         print("start ", date, "="*10)
 
+        # 実行日
+        str_datetime = self.exec_datetime.strftime("%Y%m%d%H%M%S")
+
         # 対象日のhtmlを取得
-        url_date_schedule = self.base_url + "/?date=" + str(date)
-        html = self.get_html(url_date_schedule)
-        soup = bs4.BeautifulSoup(html, "html.parser")
+        url_date_schedule = self.base_url + "/schedule/?date=" + str(date)
+        html_date = self.get_html(url_date_schedule)
+        soup = bs4.BeautifulSoup(html_date, "html.parser")
+        elems_game = soup.select('a.bb-score__content')
+        print("there are ", len(elems_game), "games")
 
-        # 対象日のゲーム一覧
-        for elem in soup.select('a.bb-score__content'):
-            game_id = elem.get('href')
+        # 対象日のゲーム覧
+        for game in elems_game:
+            url_game_tmp = game.get('href')
+            game_id_num = re.search("\d+", url_game_tmp).group()
+            
+            # ゲームのhtmlを取得
+            url_game = self.base_url+"/game/"+game_id_num+"/top"
+            html_game = self.get_html(url_game)
 
-            print(game_id)
+            # ゲームのステータスを取得
+            game_status = self.check_game_status(html_game)
 
-        # for game_num in list_game_num:
-        #     game_url = self.base_url, "/game/", str(game_num), "/top"
+            # ゲームのhtmlを保存
+            #  ゲーム日_ゲームID_ゲームステータス_実行日
+            file_name = "_".join([date, "g"+game_id_num, game_status, str_datetime])+".html"
+            out_path = os.path.join(output_dir, file_name)
+            self.save_html(html_game, out_path)
 
-        #     html = self.get_html(game_url)
-        #     save_html
+        print("finish ", date, "="*10)
 
+        return None
+
+    def exec_scraping(self, output_dir):
+        list_date = pd.date_range(start=self.start_date, end=self.end_date)
+        for date in list_date:
+            self.get_game_htmls(date=date.strftime("%Y-%m-%d"), output_dir=output_dir)
+        
         return None
