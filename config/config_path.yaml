@@ -1,0 +1,4 @@
+path_output_game_html: data/html/games
+path_output_game_tsv: data/tsv/games
+path_output_ball_html: data/html/ball
+path_output_ball_tsv: data/tsv/ball

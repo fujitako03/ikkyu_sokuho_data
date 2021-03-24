@@ -8,12 +8,9 @@ import pandas as pd
 import requests
 
 
-class ScrapingSponavi():
-    def __init__(self, start_date, end_date):
-        self.base_url = "https://baseball.yahoo.co.jp/npb"
+class ScrapingBase():
+    def __init__(self):
         self.exec_datetime = datetime.datetime.now()
-        self.start_date = start_date
-        self.end_date = end_date
 
     def get_html(self, url):
         print("get html ", url)
@@ -33,7 +30,16 @@ class ScrapingSponavi():
             f.write(html)
         
         return None
-    
+
+
+class ScrapingSponavi(ScrapingBase):
+    def __init__(self, config, start_date, end_date):
+        super().__init__()
+        self.base_url = config.url_domain + config.exec_sports
+        self.output_game_html_path = config.path_output_game_html
+        self.start_date = start_date
+        self.end_date = end_date
+
     def check_game_status(self, html):
         soup = bs4.BeautifulSoup(html, "html.parser")
         state_original = soup.select_one('span.bb-gameCard__state').get_text(strip=True)
@@ -84,9 +90,12 @@ class ScrapingSponavi():
 
         return None
 
-    def exec_scraping(self, output_dir):
+    def exec_scraping(self):
         list_date = pd.date_range(start=self.start_date, end=self.end_date)
         for date in list_date:
-            self.get_game_htmls(date=date.strftime("%Y-%m-%d"), output_dir=output_dir)
+            self.get_game_htmls(
+                date=date.strftime("%Y-%m-%d"), 
+                output_dir=self.output_game_html_path
+                )
         
         return None
