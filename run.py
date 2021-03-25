@@ -31,8 +31,6 @@ conf_url = OmegaConf.load(os.path.join(conf_dir, "config_url.yaml"))
 conf_team = OmegaConf.load(os.path.join(conf_dir, "config_team.yaml"))
 conf_merge = OmegaConf.merge(conf_cli, conf_exec, conf_path, conf_url, conf_team)
 
-print(conf_merge)
-
 # スクレイピング
 ss = ScrapingSponavi(
     start_date=conf_merge.start_date,

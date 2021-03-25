@@ -1,50 +1,62 @@
 team:
   巨人: 
     id: 1
+    team_id: npb1 
     full_name: 読売ジャイアンツ
     league: セ・リーグ
   阪神: 
     id: 5
+    team_id: npb5 
     full_name: 阪神タイガース
     league: セ・リーグ
   中日: 
     id: 4
+    team_id: npb4 
     full_name: 中日ドラゴンズ
     league: セ・リーグ
-  横浜: 
+  DeNA: 
     id: 3
+    team_id: npb3 
     full_name: 阪神タイガース
     league: セ・リーグ
   広島: 
     id: 6
+    team_id: npb6 
     full_name: 広島東洋カープ
     league: セ・リーグ
   ヤクルト: 
     id: 2
+    team_id: npb2 
     full_name: 東京ヤクルトスワローズ
     league: セ・リーグ
   ソフトバンク: 
     id: 12
+    team_id: npb12 
     full_name: 福岡ソフトバンクホークス
     league: パ・リーグ
   ロッテ: 
     id: 9
+    team_id: npb9 
     full_name: 千葉ロッテマリーンズ
     league: パ・リーグ
   西武: 
     id: 7
+    team_id: npb7
     full_name: 西武ライオンズ
     league: パ・リーグ
   楽天: 
     id: 376
+    team_id: npb376 
     full_name: 楽天ゴールデンイーグルス
     league: パ・リーグ
-  日ハム: 
+  日本ハム: 
     id: 8
+    team_id: npb8 
     full_name: 北海道日本ハムファイターズ
     league: パ・リーグ
   オリックス: 
     id: 11
+    team_id: npb11
     full_name: オリックス・バファローズ
     league: パ・リーグ
 
