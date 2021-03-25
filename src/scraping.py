@@ -181,7 +181,6 @@ class ScrapingSponavi(ScrapingBase):
         print("there are ", len(elems_game), "games")
 
         df_game_info_all = pd.DataFrame()
-        dict_game_info_all = {}
         # 対象日のゲームをループ
         for game in elems_game:
             game_url_tmp = game.get('href')
@@ -208,7 +207,7 @@ class ScrapingSponavi(ScrapingBase):
                 df_game_info_all = df_game_info_all.append(pd.Series(game_info), ignore_index=True)
         
         # 実行日列を追加
-        dict_game_info_all["exec_date"] = self.exec_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        df_game_info_all["exec_date"] = self.exec_datetime.strftime("%Y-%m-%d %H:%M:%S")
         # TODO 列順がずれる
         # 結果を出力
         self.save_csv(df=df_game_info_all, file_path=os.path.join(self.output_game_tsv_path, "lake_game.tsv"))
