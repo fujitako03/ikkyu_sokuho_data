@@ -29,7 +29,9 @@ conf_exec = OmegaConf.load(os.path.join(conf_dir, "config_exec.yaml"))
 conf_path = OmegaConf.load(os.path.join(conf_dir, "config_path.yaml"))
 conf_url = OmegaConf.load(os.path.join(conf_dir, "config_url.yaml"))
 conf_team = OmegaConf.load(os.path.join(conf_dir, "config_team.yaml"))
-conf_merge = OmegaConf.merge(conf_cli, conf_exec, conf_path, conf_url, conf_team)
+conf_schedule = OmegaConf.load(os.path.join(conf_dir, "config_schedule.yaml"))
+conf_column = OmegaConf.load(os.path.join(conf_dir, "config_column.yaml"))
+conf_merge = OmegaConf.merge(conf_cli, conf_exec, conf_path, conf_url, conf_team, conf_schedule, conf_column)
 
 # スクレイピング
 ss = ScrapingSponavi(

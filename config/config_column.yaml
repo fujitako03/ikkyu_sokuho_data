@@ -1,0 +1,30 @@
+column:
+  lake_game:
+    - game_id
+    - game_date
+    - game_start_time
+    - game_time
+    - game_series
+    - game_status
+    - game_result
+    - team_top_id
+    - team_top_name
+    - team_bottom_id
+    - team_bottom_name
+    - score_top
+    - score_bottom
+    - hit_top
+    - hit_bottom
+    - error_top
+    - error_bottom
+    - picher_win_id
+    - picher_lose_id
+    - picher_save_id
+    - starting_picher_bottom_id
+    - starting_picher_top_id
+    - audience_num
+    - umpire_plate
+    - umpire_first
+    - umpire_second
+    - umpire_third
+    - exec_datetime

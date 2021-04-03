@@ -1,15 +1,16 @@
-schedule_2021:
-  pre-season_match:
-    start_date: 2021-03-02
-    end_date: 2021-03-25
-  pennant_race:
-    start_date: 2021-03-26
-    end_date: 2021-10-21
-  climax_series:
-    start_date: 2021-10-30
-    end_date: 2021-11-10
-  nihon_series:
-    start_date: 2021-10-30
-    end_date: 2021-11-10
+schedule:
+  year_2021:
+    pre_season_match:
+      start_date: 2021-03-02
+      end_date: 2021-03-25
+    pennant_race:
+      start_date: 2021-03-26
+      end_date: 2021-10-21
+    climax_series:
+      start_date: 2021-10-30
+      end_date: 2021-11-10
+    nihon_series:
+      start_date: 2021-11-10
+      end_date: 2021-12-10
 
 
