@@ -28,3 +28,18 @@ column:
     - umpire_second
     - umpire_third
     - exec_datetime
+  
+  lake_score:
+    - game_id
+    - index
+    - inning
+    - top_buttom
+    - result_main
+    - result_sub
+    - batter_id
+    - batter_side
+    - pitcher_id
+    - pitcher_side
+    - base_1
+    - base_2
+    - base_3

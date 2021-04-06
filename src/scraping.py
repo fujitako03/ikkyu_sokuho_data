@@ -45,7 +45,7 @@ class ScrapingSponavi(ScrapingBase):
         super().__init__()
         self.base_url = config.url_domain + config.exec_sports
         self.output_game_html_path = config.path_output_game_html
-        self.output_game_tsv_path = config.path_output_game_tsv
+        self.output_lake_tsv_path = config.path_output_lake_tsv
         self.start_date = start_date
         self.end_date = end_date
         self.output = config.exec_output
@@ -56,6 +56,14 @@ class ScrapingSponavi(ScrapingBase):
         self.column = config.column
     
     def make_id(self, id):
+        """スポナビ上のID番からIDを生成する
+
+        Args:
+            id (str): [番号]
+
+        Returns:
+            [str]:ID
+        """
         return self.sports + str(id)
 
     def check_game_status(self, html):
@@ -102,6 +110,15 @@ class ScrapingSponavi(ScrapingBase):
 
     
     def get_game_info(self, html, url):
+        """試合の属性や結果を集める
+
+        Args:
+            html (str): 試合トップページのhtml
+            url (str): 試合のURL
+
+        Returns:
+            [type]: [description]
+        """
         soup = bs4.BeautifulSoup(html, "html.parser")
 
         # 結果を格納する辞書
@@ -152,11 +169,11 @@ class ScrapingSponavi(ScrapingBase):
         result["score_bottom"] = scores[1]
 
         # 勝敗
-        if result["score_top"] > result["score_top"]:
+        if result["score_top"] > result["score_bottom"]:
             result["game_result"] = "top_win"
-        elif result["score_top"] < result["score_top"]:
+        elif result["score_top"] < result["score_bottom"]:
             result["game_result"] = "bottom_win"
-        elif result["score_top"] == result["score_top"]:
+        elif result["score_top"] == result["score_bottom"]:
             result["game_result"] = "drow"
 
         # 安打数
@@ -211,6 +228,15 @@ class ScrapingSponavi(ScrapingBase):
         return result
 
     def get_games(self, date, output_dir):
+        """対象日の全試合のデータを集める
+
+        Args:
+            date (datetime): データ収集する日
+            output_dir (str): 出力先のpath
+
+        Returns:
+            [type]: [description]
+        """
         print("start ", date, "="*10)
 
         # 実行日
@@ -229,6 +255,7 @@ class ScrapingSponavi(ScrapingBase):
             return None
         else:
             df_game_info_all = pd.DataFrame()
+            df_score_info_all = pd.DataFrame()
             # 対象日のゲームをループ
             for game in elems_game:
                 game_url_tmp = game.get('href')
@@ -240,14 +267,14 @@ class ScrapingSponavi(ScrapingBase):
 
                 # ゲームの結果を取得
                 game_info = self.get_game_info(game_html, game_url)
-                
-                # ゲームのステータスを取得
-                game_status = game_info["game_status"]
 
+                # 速報ページのスコアを取得
+                score_info = self.get_score_info(self.make_id(game_id_num))
+                
                 # 結果を保存。試合が完了しているときのみ
-                if game_status in ["finish", "cancel"]:
+                if game_info["game_status"] in ["finish", "cancel"]:
                     # file名：ゲーム日_ゲームID_ゲームステータス_実行日
-                    file_name = "_".join([date, "g"+game_id_num, game_status, str_datetime])+".html"
+                    file_name = "_".join([date, "g"+game_id_num, game_info["game_status"], str_datetime])+".html"
                     out_path = os.path.join(output_dir, file_name)
 
                     if self.output:
@@ -255,16 +282,20 @@ class ScrapingSponavi(ScrapingBase):
 
                     # dfを結合
                     df_game_info_all = df_game_info_all.append(pd.Series(game_info), ignore_index=True)
+                    df_score_info_all = df_score_info_all.append(score_info, ignore_index=True)
             
             # 実行日列を追加
             df_game_info_all["exec_datetime"] = self.exec_datetime.strftime("%Y-%m-%d %H:%M:%S")
+            df_score_info_all["exec_datetime"] = self.exec_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
             # 列順を並び変える
             df_game_info_all = df_game_info_all[self.column["lake_game"]]
+            df_score_info_all = df_score_info_all[self.column["lake_score"]]
 
             # 結果を出力
             if self.output:
-                self.save_csv(df=df_game_info_all, file_path=os.path.join(self.output_game_tsv_path, "lake_game.tsv"))
+                self.save_csv(df=df_game_info_all, file_path=os.path.join(self.output_lake_tsv_path, "lake_game.tsv"))
+                self.save_csv(df=df_score_info_all, file_path=os.path.join(self.output_lake_tsv_path, "lake_score.tsv"))
             else:
                 print(df_game_info_all)
 
@@ -272,10 +303,68 @@ class ScrapingSponavi(ScrapingBase):
 
             return None
 
-    def get_play_info(self, geme_id):
+    def get_score_info(self, game_id):
+        score_url_base = self.base_url + f"/game/{game_id.replace('npb', '')}/score?index="
+        param_index = "0110100"
+        score_url = score_url_base + param_index
+
+        df_score_info = pd.DataFrame()
+        game_continue = True
+        while game_continue:
+            html = self.get_html(score_url)
+            soup = bs4.BeautifulSoup(html, "html.parser")
+
+            result = {}
+            # game_id, index
+            result["game_id"] = game_id
+            result["index"] = soup.select_one("a[class='bb-gameScoreTable__score']").get("index")
+
+            # 試合進行状況を取得
+            inning_text = soup.select_one("div[id='sbo']").select_one("em").get_text(strip=True)
+            result["inning"] = inning_text[0]
+            result["top_buttom"] = "top" if inning_text[-1] == "表" else "bottom"
+
+            # 試合終了判定
+            if inning_text == "試合終了":
+                game_continue = False
+                break
+
+            # バッター情報を取得
+            soup_batter = soup.select_one("table[id='batt']")
+            if soup_batter is not None:
+                result["batter_id"] = self.make_id(soup_batter.select_one("a").get("href").split("/")[-2])
+                result["batter_side"] = soup_batter.select_one("td.dominantHand").get_text()
+            else:
+                # 代打のとき
+                result["batter_id"] = np.nan
+                result["batter_side"] = np.nan
+
+            # ピッチャー情報を取得
+            soup_pitcher = soup.select_one("div[id='pitcherL']")
+            if soup_pitcher is None:
+                soup_pitcher = soup.select_one("div[id='pitcherR']")
+            result["pitcher_id"] = self.make_id(soup_pitcher.select_one("a").get("href").split("/")[-2])
+            result["pitcher_side"] = soup_pitcher.select_one("td.dominantHand").get_text()
+
+            # 結果を取得
+            soup_res_main = soup.select_one("div[id='result']").select_one("span")
+            result["result_main"] = soup_res_main.get_text() if soup_res_main is not None else np.nan
+            soup_res_sub = soup.select_one("div[id='result']").select_one("em")
+            result["result_sub"] = soup_res_sub.get_text() if soup_res_sub is not None else np.nan
+
+            # 走者情報
+            for i in range(1, 4):
+                base = soup.select_one(f"div[id='base{i}']")
+                result[f"base_{i}"] = base.get("href") if base is not None else np.nan
+
+            # dfを結合
+            df_score_info = df_score_info.append(pd.Series(result), ignore_index=True)
+
+            # 次のループへ
+            param_index = soup.select_one("a[id='btn_next']").get("index") # indexを上書き
+            score_url = score_url_base + param_index # urlを上書き
         
-        score_url_start = self.base_url + f"/game/{game_id.replace('npb', '')}/score?index=0110100"
-        self.get_html(score_url_start)
+        return df_score_info
 
     
     def get_player_score():
