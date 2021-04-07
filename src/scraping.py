@@ -366,7 +366,71 @@ class ScrapingSponavi(ScrapingBase):
         
         return df_score_info
 
+    def get_player_info(self, html):
+
+        soup = bs4.BeautifulSoup(html, "html.parser")
+
+        result = {}
+        soup_name = soup.select_one("ruby[class='bb-profile__name']")
+        result["player_name"] = soup_name.select_one("h1").get_text()
+
+        soup_kana = soup_name.select_one("rt")
+        result["player_name_kana"] = soup_kana.get_text()[1:-1] if soup_kana is not None else np.nan
+        result["number"] = soup.select_one("p.bb-profile__number").get_text()
+
+        list_title = [x.get_text() for x in soup.select("dt[class='bb-profile__title']")]
+        list_text = [x.get_text() for x in soup.select("dd[class='bb-profile__text']")]
+
+        # 情報を辞書化
+        profile_dict = {}
+        for i in range(len(list_text)):
+            profile_dict[list_title[i]] = list_text[i]
+        
+        # keyを列名に修正
+        result["birth_day"] = profile_dict.get("生年月日（満年齢）")
+        result["birth_place"] = profile_dict.get("出身地")
+        result["height"] = profile_dict.get("身長")
+        result["weight"] = profile_dict.get("体重")
+        result["blood_type"] = profile_dict.get("血液型")
+        result["throw_batting"] = profile_dict.get("投打")
+        result["draft_year"] = profile_dict.get("ドラフト年（順位）")
+        result["pro_age"] = profile_dict.get("プロ通算年")
+        result["keireki"] = profile_dict.get("経歴")
+        result["profile_text"] = soup.select_one("p[class='bb-profile__summary']").get_text()
+        result["img_url"] = soup.select_one("div[class='bb-profile__photo']").select_one("img").get("src")
+
+        return result
     
+    def get_players(self):
+        df_player_info = pd.DataFrame()
+        # チームの選手ページをループ
+        for team in self.team_list:
+            for kind in ["p", "b"]:
+                team_info = self.team_dict[team]
+                players_url = self.base_url + "/teams/" + team_info.team_id.replace("npb", "") + f"/memberlist?kind={kind}"
+                players_html = self.get_html(players_url)
+                soup = bs4.BeautifulSoup(players_html, "html.parser")
+                list_players_pre = soup.select("td[class='bb-playerTable__data bb-playerTable__data--player']")
+                list_players = [x.select_one("a").get("href").split("/")[-2] for x in list_players_pre]
+
+                # 順に選手情報を取得
+                for player_num in list_players:
+                    player_url = f"https://baseball.yahoo.co.jp/npb/player/{player_num}/top"
+                    player_html = self.get_html(player_url)
+                    result = self.get_player_info(player_html)
+                    result["player_id"] = self.make_id(player_num)
+
+                    # dfを結合
+                    df_player_info = df_player_info.append(pd.Series(result), ignore_index=True)
+
+        df_player_info["exec_datetime"] = self.exec_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        df_player_info = df_player_info[self.column.lake_player]
+
+        self.save_csv(df_player_info, file_path=os.path.join(self.output_lake_tsv_path, "lake_player.tsv"))
+
+        return None
+
+
     def get_player_score():
         pb_params = ["p", "b"]
         df_all = pd.DataFrame() 
@@ -382,9 +446,9 @@ class ScrapingSponavi(ScrapingBase):
                 df[df == "-"] = np.nan
                 df_all = df_all.append(df)
 
-        df_all
+        return df_all
 
-    def exec_scraping(self):
+    def exec_score_scraping(self):
         list_date = pd.date_range(start=self.start_date, end=self.end_date)
         for date in list_date:
             self.get_games(
@@ -393,3 +457,9 @@ class ScrapingSponavi(ScrapingBase):
                 )
         
         return None
+
+    def exec_player_scraping(self):
+        self.get_players()
+        
+        return None
+

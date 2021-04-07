@@ -1,2 +1,4 @@
 exec_output: True
 exec_sports: npb
+exec_run_score: False
+exec_run_player: True

@@ -43,3 +43,22 @@ column:
     - base_1
     - base_2
     - base_3
+    - exec_datetime
+  
+  lake_player:
+    - player_id
+    - player_name
+    - player_name_kana
+    - number
+    - birth_day
+    - birth_place
+    - height
+    - weight
+    - blood_type
+    - throw_batting
+    - draft_year
+    - pro_age
+    - keireki
+    - profile_text
+    - img_url
+    - exec_datetime

@@ -40,5 +40,10 @@ ss = ScrapingSponavi(
     config=conf_merge
     )
 
-# 実行
-ss.exec_scraping()
+# 試合データのスクレイピング
+if conf_merge.exec_run_score:
+    ss.exec_score_scraping()
+
+# 選手情報のスクレイピング
+if conf_merge.exec_run_player:
+    ss.exec_player_scraping()
