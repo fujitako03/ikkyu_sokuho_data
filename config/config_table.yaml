@@ -1,7 +1,7 @@
 table:
   lake_game:
     db_name:
-      ba_lake
+      sponavi_lake
     table_name:
       game
     column:
@@ -64,7 +64,7 @@ table:
 
   lake_score:
     db_name:
-      ba_lake
+      sponavi_lake
     table_name:
       score
     column:
@@ -79,6 +79,8 @@ table:
       - name: result_main
         type: STRING
       - name: result_sub
+        type: STRING
+      - name: dakyu
         type: STRING
       - name: batter_id
         type: STRING
@@ -99,7 +101,7 @@ table:
 
   lake_player:
     db_name:
-      ba_lake
+      sponavi_lake
     table_name:
       player
     column:

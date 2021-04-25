@@ -254,14 +254,14 @@ class ScrapingSponavi(ScrapingBase):
         print("there are ", len(elems_game), "games")
 
         if len(elems_game) == 0:
-            "試合がない日はスキップ"
+            # 試合がない日はスキップ
             print("finish ", date, "="*10)
             return None
         else:
             df_game_info_all = pd.DataFrame()
             df_score_info_all = pd.DataFrame()
             # 対象日のゲームをループ
-            for game in elems_game:
+            for game in elems_game[:1]:
                 game_url_tmp = game.get('href')
                 game_id_num = re.search("\d+", game_url_tmp).group()
                 
@@ -305,14 +305,14 @@ class ScrapingSponavi(ScrapingBase):
                 print(df_game_info_all)
             
             # bigqueryにテーブル作成
-            if self.upload_flg:
+            if self.upload_flag:
                 # game
                 load_to_bigquery(
                     df_game_info_all, 
                     project_id=self.project_id,
                     db_name=self.table.lake_game.db_name,
                     table_name=self.table.lake_game.table_name,
-                    schema_dict=self.table_name.lake_game.column,
+                    schema_dict=self.table.lake_game.column,
                     if_exists="append",
                     )
 
@@ -322,7 +322,7 @@ class ScrapingSponavi(ScrapingBase):
                     project_id=self.project_id,
                     db_name=self.table.lake_score.db_name,
                     table_name=self.table.lake_score.table_name,
-                    schema_dict=self.table_name.lake_score.column,
+                    schema_dict=self.table.lake_score.column,
                     if_exists="append",
                     )
 
@@ -344,7 +344,7 @@ class ScrapingSponavi(ScrapingBase):
             result = {}
             # game_id, index
             result["game_id"] = game_id
-            result["index"] = soup.select_one("a[class='bb-gameScoreTable__score']").get("index")
+            result["index"] = param_index # 2週目以降は上書きされたindex
 
             # 試合進行状況を取得
             inning_text = soup.select_one("div[id='sbo']").select_one("em").get_text(strip=True)
@@ -382,7 +382,11 @@ class ScrapingSponavi(ScrapingBase):
             # 走者情報
             for i in range(1, 4):
                 base = soup.select_one(f"div[id='base{i}']")
-                result[f"base_{i}"] = base.get("href") if base is not None else np.nan
+                result[f"base_{i}"] = base.get_text() if base is not None else np.nan
+
+            # 打球情報
+            dakyu = soup.select_one(f"div[id='dakyu']")
+            result[f"dakyu"] = dakyu.get("class")
 
             # dfを結合
             df_score_info = df_score_info.append(pd.Series(result), ignore_index=True)
