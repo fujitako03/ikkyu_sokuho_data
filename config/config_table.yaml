@@ -1,0 +1,121 @@
+table:
+  lake_game:
+    db_name:
+      ba_lake
+    table_name:
+      game
+    column:
+      - name: game_id
+        type: STRING
+      - name: game_date
+        type: DATE
+      - name: game_start_time
+        type: STRING
+      - name: game_time
+        type: STRING
+      - name: game_series
+        type: STRING
+      - name: game_status
+        type: STRING
+      - name: game_result
+        type: STRING
+      - name: team_top_id
+        type: STRING
+      - name: team_top_name
+        type: STRING
+      - name: team_bottom_id
+        type: STRING
+      - name: team_bottom_name
+        type: STRING
+      - name: score_top
+        type: INTEGER
+      - name: score_bottom
+        type: INTEGER
+      - name: hit_top
+        type: INTEGER
+      - name: hit_bottom
+        type: INTEGER
+      - name: error_top
+        type: INTEGER
+      - name: error_bottom
+        type: INTEGER
+      - name: picher_win_id
+        type: STRING
+      - name: picher_lose_id
+        type: STRING
+      - name: picher_save_id
+        type: STRING
+      - name: starting_picher_bottom_id
+        type: STRING
+      - name: starting_picher_top_id
+        type: STRING
+      - name: audience_num
+        type: STRING
+      - name: umpire_plate
+        type: STRING
+      - name: umpire_first
+        type: STRING
+      - name: umpire_second
+        type: STRING
+      - name: umpire_third
+        type: STRING
+      - name: exec_datetime
+        type: DATETIME
+
+  lake_score:
+    db_name:
+      ba_lake
+    table_name:
+      score
+    column:
+      - name: game_id
+        type: STRING
+      - name: index
+        type: STRING
+      - name: inning
+        type: STRING
+      - name: top_buttom
+        type: STRING
+      - name: result_main
+        type: STRING
+      - name: result_sub
+        type: STRING
+      - name: batter_id
+        type: STRING
+      - name: batter_side
+        type: STRING
+      - name: pitcher_id
+        type: STRING
+      - name: pitcher_side
+        type: STRING
+      - name: base_1
+        type: STRING
+      - name: base_2
+        type: STRING
+      - name: base_3
+        type: STRING
+      - name: exec_datetime
+        type: DATETIME
+
+  lake_player:
+    db_name:
+      ba_lake
+    table_name:
+      player
+    column:
+      - name: player_id
+      - name: player_name
+      - name: player_name_kana
+      - name: number
+      - name: birth_day
+      - name: birth_place
+      - name: height
+      - name: weight
+      - name: blood_type
+      - name: throw_batting
+      - name: draft_year
+      - name: pro_age
+      - name: keireki
+      - name: profile_text
+      - name: img_url
+      - name: exec_datetime

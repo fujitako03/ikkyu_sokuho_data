@@ -1,4 +1,5 @@
-exec_output: True
 exec_sports: npb
-exec_run_score: False
-exec_run_player: True
+exec_output: True
+exec_upload: True
+exec_run_score: True
+exec_run_player: False

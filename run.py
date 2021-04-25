@@ -8,20 +8,6 @@ from src.scraping import ScrapingSponavi
 
 now_datetime = datetime.datetime.now()
 
-# 引数
-# parser = argparse.ArgumentParser(description='get Sponavi data')
-# parser.add_argument('-s', '--start',  help='start date')
-# parser.add_argument('-e', '--end', help='end date')
-# args = parser.parse_args()
-
-# if args.start == args.start and args.end == args.end:
-#     start_date = args.start
-#     end_date = args.end
-# else:
-#     start_date = now_datetime.strftime("%Y-%m-%d")
-#     end_date = now_datetime.strftime("%Y-%m-%d")
-
-
 # 出力先
 conf_dir = "config"
 conf_cli = OmegaConf.from_cli()
@@ -30,8 +16,8 @@ conf_path = OmegaConf.load(os.path.join(conf_dir, "config_path.yaml"))
 conf_url = OmegaConf.load(os.path.join(conf_dir, "config_url.yaml"))
 conf_team = OmegaConf.load(os.path.join(conf_dir, "config_team.yaml"))
 conf_schedule = OmegaConf.load(os.path.join(conf_dir, "config_schedule.yaml"))
-conf_column = OmegaConf.load(os.path.join(conf_dir, "config_column.yaml"))
-conf_merge = OmegaConf.merge(conf_cli, conf_exec, conf_path, conf_url, conf_team, conf_schedule, conf_column)
+conf_table = OmegaConf.load(os.path.join(conf_dir, "config_table.yaml"))
+conf_merge = OmegaConf.merge(conf_cli, conf_exec, conf_path, conf_url, conf_team, conf_schedule, conf_table)
 
 # スクレイピング
 ss = ScrapingSponavi(

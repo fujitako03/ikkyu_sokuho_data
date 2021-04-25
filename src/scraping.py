@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 import requests
 
+from .db_connection import load_to_bigquery
+
 
 class ScrapingBase():
     def __init__(self):
@@ -43,17 +45,19 @@ class ScrapingBase():
 class ScrapingSponavi(ScrapingBase):
     def __init__(self, config, start_date, end_date):
         super().__init__()
+        self.project_id = os.getenv("PROJECT_ID")
+        self.sports = config.exec_sports
+        self.upload_flag = config.exec_upload
+        self.output_flag = config.exec_output
         self.base_url = config.url_domain + config.exec_sports
         self.output_game_html_path = config.path_output_game_html
         self.output_lake_tsv_path = config.path_output_lake_tsv
         self.start_date = start_date
         self.end_date = end_date
-        self.output = config.exec_output
-        self.sports = config.exec_sports
         self.team_dict = config.team
         self.team_list = config.team_list
         self.schedule = config.schedule
-        self.column = config.column
+        self.table = config.table
     
     def make_id(self, id):
         """スポナビ上のID番からIDを生成する
@@ -277,7 +281,8 @@ class ScrapingSponavi(ScrapingBase):
                     file_name = "_".join([date, "g"+game_id_num, game_info["game_status"], str_datetime])+".html"
                     out_path = os.path.join(output_dir, file_name)
 
-                    if self.output:
+                    # 出力
+                    if self.output_flag:
                         self.save_html(game_html, out_path)
 
                     # dfを結合
@@ -289,15 +294,37 @@ class ScrapingSponavi(ScrapingBase):
             df_score_info_all["exec_datetime"] = self.exec_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
             # 列順を並び変える
-            df_game_info_all = df_game_info_all[self.column["lake_game"]]
-            df_score_info_all = df_score_info_all[self.column["lake_score"]]
+            df_game_info_all = df_game_info_all[[c.name for c in self.table.lake_game.column]]
+            df_score_info_all = df_score_info_all[[c.name for c in self.table.lake_score.column]]
 
             # 結果を出力
-            if self.output:
+            if self.output_flag:
                 self.save_csv(df=df_game_info_all, file_path=os.path.join(self.output_lake_tsv_path, "lake_game.tsv"))
                 self.save_csv(df=df_score_info_all, file_path=os.path.join(self.output_lake_tsv_path, "lake_score.tsv"))
             else:
                 print(df_game_info_all)
+            
+            # bigqueryにテーブル作成
+            if self.upload_flg:
+                # game
+                load_to_bigquery(
+                    df_game_info_all, 
+                    project_id=self.project_id,
+                    db_name=self.table.lake_game.db_name,
+                    table_name=self.table.lake_game.table_name,
+                    schema_dict=self.table_name.lake_game.column,
+                    if_exists="append",
+                    )
+
+                # score
+                load_to_bigquery(
+                    df_score_info_all, 
+                    project_id=self.project_id,
+                    db_name=self.table.lake_score.db_name,
+                    table_name=self.table.lake_score.table_name,
+                    schema_dict=self.table_name.lake_score.column,
+                    if_exists="append",
+                    )
 
             print("finish ", date, "="*10)
 
@@ -424,7 +451,7 @@ class ScrapingSponavi(ScrapingBase):
                     df_player_info = df_player_info.append(pd.Series(result), ignore_index=True)
 
         df_player_info["exec_datetime"] = self.exec_datetime.strftime("%Y-%m-%d %H:%M:%S")
-        df_player_info = df_player_info[self.column.lake_player]
+        df_player_info = df_player_info[[c.name for c in self.table.lake_player.column]]
 
         self.save_csv(df_player_info, file_path=os.path.join(self.output_lake_tsv_path, "lake_player.tsv"))
 
