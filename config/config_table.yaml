@@ -99,6 +99,31 @@ table:
       - name: exec_datetime
         type: DATETIME
 
+  lake_ball:
+    db_name:
+      sponavi_lake
+    table_name:
+      ball
+    column:
+      - name: game_id
+        type: STRING
+      - name: index
+        type: STRING
+      - name: number
+        type: INTEGER
+      - name: balltype
+        type: STRING
+      - name: speed
+        type: NUMERIC
+      - name: result
+        type: STRING
+      - name: position_top
+        type: NUMERIC
+      - name: position_left
+        type: NUMERIC
+      - name: exec_datetime
+        type: DATETIME
+
   lake_player:
     db_name:
       sponavi_lake

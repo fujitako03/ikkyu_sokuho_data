@@ -15,16 +15,18 @@ class ScrapingBase():
     def __init__(self):
         self.exec_datetime = datetime.datetime.now()
 
-    def get_html(self, url):
-        print("get html ", url)
-        time.sleep(1)
+    def get_html(self, url, show=False):
+        time.sleep(0.1) 
+
+        if show:
+            print("get url ", url)
+
         res = requests.get(url)
         try:
             res.raise_for_status()
-            print("success")
-        except requests.exceptions.RequestException:
-            print("faild")
-            return None
+        except:
+            print("error ", url)
+            raise Exception("htmlの取得に失敗しました")
         
         return res.text
 
@@ -71,7 +73,7 @@ class ScrapingSponavi(ScrapingBase):
         return self.sports + str(id)
 
     def check_game_status(self, html):
-        soup = bs4.BeautifulSoup(html, "html.parser")
+        soup = bs4.BeautifulSoup(html, "html.parser", from_encoding="utf-8")
         state_original = soup.select_one('span.bb-gameCard__state').get_text(strip=True)
         
         if state_original=="試合終了":
@@ -123,7 +125,7 @@ class ScrapingSponavi(ScrapingBase):
         Returns:
             [type]: [description]
         """
-        soup = bs4.BeautifulSoup(html, "html.parser")
+        soup = bs4.BeautifulSoup(html, "html.parser", from_encoding="utf-8")
 
         # 結果を格納する辞書
         result = {}
@@ -205,7 +207,10 @@ class ScrapingSponavi(ScrapingBase):
             result["picher_lose_id"] = list_pitcher_ids[1]
             result["picher_save_id"] = list_pitcher_ids[2]
         except:
-            pass # 引き分け
+            # 引き分け
+            result["picher_win_id"] = np.nan
+            result["picher_lose_id"] = np.nan
+            result["picher_save_id"] = np.nan
 
         # 先発ピッチャー
         soup_pick = soup.select_one("section[id='strt_mem']")
@@ -249,7 +254,7 @@ class ScrapingSponavi(ScrapingBase):
         # 対象日のゲーム一覧htmlを取得
         url_date_schedule = self.base_url + "/schedule/?date=" + str(date)
         html_date = self.get_html(url_date_schedule)
-        soup = bs4.BeautifulSoup(html_date, "html.parser")
+        soup = bs4.BeautifulSoup(html_date, "html.parser", from_encoding="utf-8")
         elems_game = soup.select('a.bb-score__content')
         print("there are ", len(elems_game), "games")
 
@@ -260,8 +265,10 @@ class ScrapingSponavi(ScrapingBase):
         else:
             df_game_info_all = pd.DataFrame()
             df_score_info_all = pd.DataFrame()
+            df_ball_info_all = pd.DataFrame()
             # 対象日のゲームをループ
-            for game in elems_game[:1]:
+            for i, game in enumerate(elems_game):
+                print(i+1, " / ", len(elems_game))
                 game_url_tmp = game.get('href')
                 game_id_num = re.search("\d+", game_url_tmp).group()
                 
@@ -270,15 +277,15 @@ class ScrapingSponavi(ScrapingBase):
                 game_html = self.get_html(game_url)
 
                 # ゲームの結果を取得
-                game_info = self.get_game_info(game_html, game_url)
-
-                # 速報ページのスコアを取得
-                score_info = self.get_score_info(self.make_id(game_id_num))
+                df_game_info = self.get_game_info(game_html, game_url)
                 
                 # 結果を保存。試合が完了しているときのみ
-                if game_info["game_status"] in ["finish", "cancel"]:
+                if df_game_info["game_status"] == "finish":
+                    # 速報ページのスコアを取得
+                    df_score_info, df_ball_info = self.get_score_info(self.make_id(game_id_num))
+
                     # file名：ゲーム日_ゲームID_ゲームステータス_実行日
-                    file_name = "_".join([date, "g"+game_id_num, game_info["game_status"], str_datetime])+".html"
+                    file_name = "_".join([date, "g"+game_id_num, df_game_info["game_status"], str_datetime])+".html"
                     out_path = os.path.join(output_dir, file_name)
 
                     # 出力
@@ -286,23 +293,29 @@ class ScrapingSponavi(ScrapingBase):
                         self.save_html(game_html, out_path)
 
                     # dfを結合
-                    df_game_info_all = df_game_info_all.append(pd.Series(game_info), ignore_index=True)
-                    df_score_info_all = df_score_info_all.append(score_info, ignore_index=True)
+                    df_game_info_all = df_game_info_all.append(pd.Series(df_game_info), ignore_index=True)
+                    df_score_info_all = df_score_info_all.append(df_score_info, ignore_index=True)
+                    df_ball_info_all = df_ball_info_all.append(df_ball_info, ignore_index=True)
+
             
             # 実行日列を追加
             df_game_info_all["exec_datetime"] = self.exec_datetime.strftime("%Y-%m-%d %H:%M:%S")
             df_score_info_all["exec_datetime"] = self.exec_datetime.strftime("%Y-%m-%d %H:%M:%S")
+            df_ball_info_all["exec_datetime"] = self.exec_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
             # 列順を並び変える
             df_game_info_all = df_game_info_all[[c.name for c in self.table.lake_game.column]]
             df_score_info_all = df_score_info_all[[c.name for c in self.table.lake_score.column]]
+            df_ball_info_all = df_ball_info_all[[c.name for c in self.table.lake_ball.column]]
 
             # 結果を出力
             if self.output_flag:
                 self.save_csv(df=df_game_info_all, file_path=os.path.join(self.output_lake_tsv_path, "lake_game.tsv"))
                 self.save_csv(df=df_score_info_all, file_path=os.path.join(self.output_lake_tsv_path, "lake_score.tsv"))
+                self.save_csv(df=df_ball_info_all, file_path=os.path.join(self.output_lake_tsv_path, "lake_ball.tsv"))
             else:
-                print(df_game_info_all)
+                # print(df_game_info_all)
+                pass
             
             # bigqueryにテーブル作成
             if self.upload_flag:
@@ -326,6 +339,16 @@ class ScrapingSponavi(ScrapingBase):
                     if_exists="append",
                     )
 
+                # ball
+                load_to_bigquery(
+                    df_ball_info_all, 
+                    project_id=self.project_id,
+                    db_name=self.table.lake_ball.db_name,
+                    table_name=self.table.lake_ball.table_name,
+                    schema_dict=self.table.lake_ball.column,
+                    if_exists="append",
+                    )
+
             print("finish ", date, "="*10)
 
             return None
@@ -336,10 +359,11 @@ class ScrapingSponavi(ScrapingBase):
         score_url = score_url_base + param_index
 
         df_score_info = pd.DataFrame()
+        df_ball_info = pd.DataFrame()
         game_continue = True
         while game_continue:
             html = self.get_html(score_url)
-            soup = bs4.BeautifulSoup(html, "html.parser")
+            soup = bs4.BeautifulSoup(html, "html.parser", from_encoding="utf-8")
 
             result = {}
             # game_id, index
@@ -386,7 +410,14 @@ class ScrapingSponavi(ScrapingBase):
 
             # 打球情報
             dakyu = soup.select_one(f"div[id='dakyu']")
-            result[f"dakyu"] = dakyu.get("class")
+            result[f"dakyu"] = dakyu.get("class")[0] if dakyu.get("class") is not None else np.nan
+
+            # 1球ごとの情報
+            df_ball = self.get_ball_info(soup, game_id=game_id, index=param_index)
+            df_ball_info = df_ball_info.append(df_ball)
+
+            if df_ball_info["game_id"].isnull().sum() > 0:
+                print("stop")
 
             # dfを結合
             df_score_info = df_score_info.append(pd.Series(result), ignore_index=True)
@@ -395,11 +426,52 @@ class ScrapingSponavi(ScrapingBase):
             param_index = soup.select_one("a[id='btn_next']").get("index") # indexを上書き
             score_url = score_url_base + param_index # urlを上書き
         
-        return df_score_info
+        return df_score_info, df_ball_info
+    
 
+    def get_ball_info(self, soup, game_id, index):
+        # 球種
+        soup_select = soup.select("td[class='bb-splitsTable__data bb-splitsTable__data--ballType']")
+        balltype_list = [s.get_text(strip=True) for s in soup_select]
+
+        # 球速
+        soup_select = soup.select("td[class='bb-splitsTable__data bb-splitsTable__data--speed']")
+        speed_list_pre = [s.get_text(strip=True).replace("km/h", "").replace("-", "") for s in soup_select]
+        speed_list = [float(x) if x!="" else np.nan for x in speed_list_pre]
+
+        # 結果
+        soup_select = soup.select("td[class='bb-splitsTable__data bb-splitsTable__data--result']")
+        result_list = [s.get_text(strip=True) for s in soup_select]
+
+        # 場所
+        soup_select = soup.select_one("div[class='bb-allocationChart']")
+        soup_ball_list = soup_select.select("span.bb-icon__ballCircle")
+        position_top_list = []
+        position_left_list = []
+        for soup_ball in soup_ball_list:
+            style_text = soup_ball.get("style")
+            numbers = re.findall("[0-9]+", style_text)
+            position_top_list.append(float(numbers[0]))
+            position_left_list.append(float(numbers[1]))
+
+        df_output = pd.DataFrame()
+        num_ball = len(result_list)
+        if num_ball > 0:
+            df_output["game_id"] = np.repeat(game_id, num_ball)
+            df_output["index"] = np.repeat(index, num_ball)
+            df_output["number"] = range(1, num_ball+1)
+            df_output["balltype"] = balltype_list
+            df_output["speed"] = speed_list
+            df_output["result"] = result_list
+            df_output["position_top"] = position_top_list
+            df_output["position_left"] = position_left_list
+
+        return df_output
+
+    
     def get_player_info(self, html):
 
-        soup = bs4.BeautifulSoup(html, "html.parser")
+        soup = bs4.BeautifulSoup(html, "html.parser", from_encoding="utf-8")
 
         result = {}
         soup_name = soup.select_one("ruby[class='bb-profile__name']")
@@ -440,7 +512,7 @@ class ScrapingSponavi(ScrapingBase):
                 team_info = self.team_dict[team]
                 players_url = self.base_url + "/teams/" + team_info.team_id.replace("npb", "") + f"/memberlist?kind={kind}"
                 players_html = self.get_html(players_url)
-                soup = bs4.BeautifulSoup(players_html, "html.parser")
+                soup = bs4.BeautifulSoup(players_html, "html.parser", from_encoding="utf-8")
                 list_players_pre = soup.select("td[class='bb-playerTable__data bb-playerTable__data--player']")
                 list_players = [x.select_one("a").get("href").split("/")[-2] for x in list_players_pre]
 
@@ -469,7 +541,7 @@ class ScrapingSponavi(ScrapingBase):
             for pb in pb_params:
                 target_url = ss.base_url + "/teams/" + str(ss.team_dict[team].id) + "/memberlist?kind=" + pb
                 html = ss.get_html(target_url)
-                soup = bs4.BeautifulSoup(html, "html.parser")
+                soup = bs4.BeautifulSoup(html, "html.parser", from_encoding="utf-8")
                 tb = soup.find_all('table')[0] 
                 df = pd.read_html(str(tb),encoding='utf-8', header=0)[0]
                 df = df.drop(len(df)-1) # 最終行を削除
