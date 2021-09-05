@@ -131,18 +131,49 @@ table:
       player
     column:
       - name: player_id
+        type: STRING
       - name: player_name
+        type: STRING
       - name: player_name_kana
+        type: STRING
       - name: number
+        type: STRING
       - name: birth_day
+        type: DATE
       - name: birth_place
+        type: STRING
       - name: height
+        type: INTEGER
       - name: weight
+        type: INTEGER
       - name: blood_type
+        type: STRING
       - name: throw_batting
+        type: STRING
       - name: draft_year
+        type: STRING
       - name: pro_age
+        type: INTEGER
       - name: keireki
+        type: STRING
       - name: profile_text
+        type: STRING
       - name: img_url
-      - name: exec_datetime
+        type: STRING
+      - name: flow_id
+        type: STRING
+
+  dm_team:
+    db_name:
+      sponavi_dm
+    table_name:
+      team
+    column:
+      - name: team_id
+        type: STRING
+      - name: team_name
+        type: STRING
+      - name: team_name_full
+        type: STRING
+      - name: league
+        type: STRING

@@ -1,103 +1,74 @@
-npb:
-  - 
-    sponavi_team_id: 1
-    team_id: npb1 
-    team_name: 巨人
-    full_name: 読売ジャイアンツ
-    league: セ・リーグ
-  - 
-    sponavi_team_id: 5
-    team_id: npb5 
-    team_name: 阪神
-    full_name: 阪神タイガース
-    league: セ・リーグ
-  - 
-    sponavi_team_id: 4
-    team_id: npb4 
-    team_name: 中日
-    full_name: 中日ドラゴンズ
-    league: セ・リーグ
-  -
-    sponavi_team_id: 3
-    team_id: npb3 
-    team_name: 阪神
-    full_name: 阪神タイガース
-    league: セ・リーグ
-  -
-    sponavi_team_id: 6
-    team_id: npb6 
-    team_name: 広島
-    full_name: 広島東洋カープ
-    league: セ・リーグ
-  -
-    sponavi_team_id: 2
-    team_id: npb2 
-    team_name: ヤクルト
-    full_name: 東京ヤクルトスワローズ
-    league: セ・リーグ
-  -
-    sponavi_team_id: 12
-    team_id: npb12 
-    team_name: ソフトバンク
-    full_name: 福岡ソフトバンクホークス
-    league: パ・リーグ
-  - 
-    sponavi_team_id: 9
-    team_id: npb9 
-    team_name: ロッテ
-    full_name: 千葉ロッテマリーンズ
-    league: パ・リーグ
-  -
-    sponavi_team_id: 7
-    team_id: npb7
-    team_name: 西武
-    full_name: 西武ライオンズ
-    league: パ・リーグ
-  -
-    sponavi_team_id: 376
-    team_id: npb376 
-    team_name: 楽天
-    full_name: 楽天ゴールデンイーグルス
-    league: パ・リーグ
-  -
-    sponavi_team_id: 8
-    team_id: npb8 
-    team_name: 日本ハム
-    full_name: 北海道日本ハムファイターズ
-    league: パ・リーグ
-  -
-    sponavi_team_id: 11
-    team_id: npb11
-    team_name: オリックス
-    full_name: オリックス・バファローズ
-    league: パ・リーグ
-
-# team_central_league:
-#   - 巨人
-#   - 横浜
-#   - 中日
-#   - 阪神
-#   - 広島
-#   - ヤクルト
-
-# team_pacific_league:
-#   - ソフトバンク
-#   - ロッテ
-#   - 西武
-#   - 楽天
-#   - 日ハム
-#   - オリックス
-
-# team_list:
-#   - 巨人
-#   - DeNA
-#   - 中日
-#   - 阪神
-#   - 広島
-#   - ヤクルト
-#   - ソフトバンク
-#   - ロッテ
-#   - 西武
-#   - 楽天
-#   - 日本ハム
-#   - オリックス
+team:
+  npb:
+    - 
+      sponavi_team_id: 1
+      team_id: npb1 
+      team_name: 巨人
+      full_name: 読売ジャイアンツ
+      league: セ・リーグ
+    - 
+      sponavi_team_id: 5
+      team_id: npb5 
+      team_name: 阪神
+      full_name: 阪神タイガース
+      league: セ・リーグ
+    - 
+      sponavi_team_id: 4
+      team_id: npb4 
+      team_name: 中日
+      full_name: 中日ドラゴンズ
+      league: セ・リーグ
+    -
+      sponavi_team_id: 3
+      team_id: npb3 
+      team_name: 阪神
+      full_name: 阪神タイガース
+      league: セ・リーグ
+    -
+      sponavi_team_id: 6
+      team_id: npb6 
+      team_name: 広島
+      full_name: 広島東洋カープ
+      league: セ・リーグ
+    -
+      sponavi_team_id: 2
+      team_id: npb2 
+      team_name: ヤクルト
+      full_name: 東京ヤクルトスワローズ
+      league: セ・リーグ
+    -
+      sponavi_team_id: 12
+      team_id: npb12 
+      team_name: ソフトバンク
+      full_name: 福岡ソフトバンクホークス
+      league: パ・リーグ
+    - 
+      sponavi_team_id: 9
+      team_id: npb9 
+      team_name: ロッテ
+      full_name: 千葉ロッテマリーンズ
+      league: パ・リーグ
+    -
+      sponavi_team_id: 7
+      team_id: npb7
+      team_name: 西武
+      full_name: 西武ライオンズ
+      league: パ・リーグ
+    -
+      sponavi_team_id: 376
+      team_id: npb376 
+      team_name: 楽天
+      full_name: 楽天ゴールデンイーグルス
+      league: パ・リーグ
+    -
+      sponavi_team_id: 8
+      team_id: npb8 
+      team_name: 日本ハム
+      full_name: 北海道日本ハムファイターズ
+      league: パ・リーグ
+    -
+      sponavi_team_id: 11
+      team_id: npb11
+      team_name: オリックス
+      full_name: オリックス・バファローズ
+      league: パ・リーグ
