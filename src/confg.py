@@ -3,7 +3,7 @@ import os
 from omegaconf import OmegaConf
 
 
-class Team:
+class ConfigTeam:
     def __init__(self, league, conf) -> None:
         self.conf = conf
         self.league = league
@@ -14,18 +14,18 @@ class Team:
         Returns:
             list(int): チームIDリスト
         """
-        team_list = self.conf.npb
+        team_list = self.conf.get(self.league)
         return [t.sponavi_team_id for t in team_list]
 
 
 if __name__=='__main__':
     league = "npb"
     conf_team = OmegaConf.load("./config/config_team.yaml")
-    team = Team(
+    config_team = ConfigTeam(
         league=league,
         conf=conf_team)
 
-    team_list = team.get_sponavi_team_id_list()
+    team_list = config_team.get_sponavi_team_id_list()
     print(team_list)
 
 
