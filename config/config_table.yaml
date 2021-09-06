@@ -11,6 +11,8 @@ table:
         type: DATE
       - name: game_start_time
         type: STRING
+      - name: game_title
+        type: STRING
       - name: game_time
         type: STRING
       - name: game_series
@@ -59,8 +61,8 @@ table:
         type: STRING
       - name: umpire_third
         type: STRING
-      - name: exec_datetime
-        type: DATETIME
+      - name: flow_id
+        type: STRING
 
   lake_score:
     db_name:
@@ -135,6 +137,8 @@ table:
       - name: player_name
         type: STRING
       - name: player_name_kana
+        type: STRING
+      - name: team_full_name
         type: STRING
       - name: number
         type: STRING

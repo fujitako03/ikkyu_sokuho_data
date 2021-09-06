@@ -37,6 +37,13 @@ class ConfigTeam:
         """
         team_list = self.conf.team.get(self.league)
         return [t.sponavi_team_id for t in team_list]
+    
+    def get_team_id_from_name(self, team_name) -> str:
+        team_list = self.conf.team.get(self.league)
+        res = [team.team_id for team in team_list if team.team_name == team_name]
+
+        return res[0]
+
 
 
 if __name__=='__main__':
