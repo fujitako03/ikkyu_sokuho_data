@@ -56,6 +56,8 @@ class ScrapingPlayer(ScrapingBase):
         soup_kana = soup_name.select_one("rt")
         result["player_name_kana"] = soup_kana.get_text()[1:-1] if soup_kana is not None else None
 
+        # チーム名
+        result["team_full_name"] = soup.select_one("h1[class='bb-head01__title']").get_text()
 
         # 背番号
         result["number"] = soup.select_one("p.bb-profile__number").get_text()
@@ -134,7 +136,8 @@ if __name__=='__main__':
     # 環境変数から読み込む
     project_id = os.getenv("PROJECT_ID")
 
-    flow_id = datetime.datetime.now().strftime("%Y%m%d_%h%M%s")
+    # フローID
+    flow_id = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # load_config 
     config_all = ConfigALL()
